@@ -18,7 +18,7 @@ export const ENEMY_TYPES = {
     name: 'fast',
     color: '#ff6b35',
     glowColor: 'rgba(255, 107, 53, 0.4)',
-    speedMultiplier: 1.8,
+    speedMultiplier: 2.2,
     shape: 'triangle',
     points: 15
   },
@@ -26,7 +26,7 @@ export const ENEMY_TYPES = {
     name: 'zigzag',
     color: '#ff2ecf',
     glowColor: 'rgba(255, 46, 207, 0.4)',
-    speedMultiplier: 1.1,
+    speedMultiplier: 1.2,
     shape: 'hexagon',
     points: 20
   },
@@ -34,8 +34,24 @@ export const ENEMY_TYPES = {
     name: 'orbit',
     color: '#ffd700',
     glowColor: 'rgba(255, 215, 0, 0.4)',
-    speedMultiplier: 0.7,
+    speedMultiplier: 0.8,
     shape: 'circle',
+    points: 25
+  },
+  burst: {
+    name: 'burst',
+    color: '#00ff41',
+    glowColor: 'rgba(0, 255, 65, 0.4)',
+    speedMultiplier: 0.6,
+    shape: 'square',
+    points: 30
+  },
+  accelerator: {
+    name: 'accelerator',
+    color: '#ff0055',
+    glowColor: 'rgba(255, 0, 85, 0.4)',
+    speedMultiplier: 0.5,
+    shape: 'triangle',
     points: 25
   }
 };
@@ -44,23 +60,16 @@ export const ENEMY_TYPES = {
 
 /**
  * Create a new enemy.
- * @param {number} canvasW
- * @param {number} canvasH
- * @param {{ x: number, y: number }} corePos — center of the core
- * @param {number} difficulty — 0 to 1
- * @param {string[]} activeWords
- * @returns {object} enemy
  */
-export function createEnemy(canvasW, canvasH, corePos, difficulty, activeWords) {
-  const type = pickEnemyType(difficulty);
+export function createEnemy(canvasW, canvasH, corePos, difficulty, activeWords, overrideProps = {}) {
+  const type = overrideProps.type || pickEnemyType(difficulty);
   const typeDef = ENEMY_TYPES[type];
-  const word = getUniqueWord(difficulty, activeWords);
-  const spawn = getSpawnPosition(canvasW, canvasH);
+  const word = overrideProps.word || getUniqueWord(difficulty, activeWords);
+  const spawn = overrideProps.x !== undefined ? { x: overrideProps.x, y: overrideProps.y } : getSpawnPosition(canvasW, canvasH);
   
-  const baseSpeed = 30 + difficulty * 25; // pixels per second
+  const baseSpeed = 40 + difficulty * 40;
   const speed = baseSpeed * typeDef.speedMultiplier;
 
-  // Direction toward core
   const dx = corePos.x - spawn.x;
   const dy = corePos.y - spawn.y;
   const dist = Math.sqrt(dx * dx + dy * dy);
@@ -70,7 +79,7 @@ export function createEnemy(canvasW, canvasH, corePos, difficulty, activeWords) 
   const enemy = {
     id: Math.random().toString(36).substr(2, 9),
     word,
-    typedIndex: 0,       // how many chars have been typed
+    typedIndex: 0,
     x: spawn.x,
     y: spawn.y,
     vx: dirX * speed,
@@ -81,144 +90,115 @@ export function createEnemy(canvasW, canvasH, corePos, difficulty, activeWords) 
     isTargeted: false,
     alive: true,
     spawnTime: performance.now(),
+    glitchOffset: { x: 0, y: 0 },
+    
+    // Custom behaviors
+    didSplit: false,
+    acceleration: type === 'accelerator' ? 1.05 : 1,
 
     // For zigzag
-    baseX: spawn.x,
-    baseY: spawn.y,
     travelDist: 0,
-    perpX: -dirY,       // perpendicular direction
-    perpY: dirX,
-
+    
     // For orbit
     angle: Math.atan2(spawn.y - corePos.y, spawn.x - corePos.x),
     radius: dist,
-    angularSpeed: 0.4 + Math.random() * 0.3,
-    spiralRate: 15 + Math.random() * 10,
+    angularSpeed: (0.4 + Math.random() * 0.4) * (Math.random() > 0.5 ? 1 : -1),
+    spiralRate: 20 + Math.random() * 15,
 
-    // Visual
-    size: 8 + word.length * 1.5,
-    alpha: 0,            // fade in
-    pulsePhase: Math.random() * Math.PI * 2
+    size: 10 + word.length * 2,
+    alpha: 0
   };
 
   return enemy;
 }
 
-/**
- * Pick an enemy type based on difficulty.
- */
 function pickEnemyType(difficulty) {
   const r = Math.random();
-  
-  if (difficulty < 0.2) {
-    return 'normal';
-  } else if (difficulty < 0.4) {
-    return r < 0.7 ? 'normal' : 'fast';
-  } else if (difficulty < 0.6) {
+  if (difficulty < 0.15) return 'normal';
+  if (difficulty < 0.3) return r < 0.6 ? 'normal' : 'fast';
+  if (difficulty < 0.5) {
     if (r < 0.4) return 'normal';
     if (r < 0.7) return 'fast';
     return 'zigzag';
-  } else {
-    if (r < 0.25) return 'normal';
-    if (r < 0.50) return 'fast';
+  }
+  if (difficulty < 0.7) {
+    if (r < 0.3) return 'normal';
+    if (r < 0.5) return 'fast';
     if (r < 0.75) return 'zigzag';
     return 'orbit';
   }
+  // Late game
+  if (r < 0.2) return 'fast';
+  if (r < 0.4) return 'zigzag';
+  if (r < 0.6) return 'orbit';
+  if (r < 0.8) return 'burst';
+  return 'accelerator';
 }
 
-/**
- * Get a random spawn position along the canvas edge with margin.
- */
 function getSpawnPosition(canvasW, canvasH) {
-  const margin = 60;
+  const margin = 80;
   const side = Math.floor(Math.random() * 4);
-  
   switch (side) {
-    case 0: // top
-      return { x: margin + Math.random() * (canvasW - margin * 2), y: -margin };
-    case 1: // right
-      return { x: canvasW + margin, y: margin + Math.random() * (canvasH - margin * 2) };
-    case 2: // bottom
-      return { x: margin + Math.random() * (canvasW - margin * 2), y: canvasH + margin };
-    case 3: // left
-      return { x: -margin, y: margin + Math.random() * (canvasH - margin * 2) };
-    default:
-      return { x: -margin, y: canvasH / 2 };
+    case 0: return { x: margin + Math.random() * (canvasW - margin * 2), y: -margin };
+    case 1: return { x: canvasW + margin, y: margin + Math.random() * (canvasH - margin * 2) };
+    case 2: return { x: margin + Math.random() * (canvasW - margin * 2), y: canvasH + margin };
+    case 3: return { x: -margin, y: margin + Math.random() * (canvasH - margin * 2) };
+    default: return { x: -margin, y: canvasH / 2 };
   }
 }
 
 // ── Movement Update ─────────────────────────────────────────
 
-/**
- * Update enemy position based on its type.
- * @param {object} enemy
- * @param {{ x: number, y: number }} corePos
- * @param {number} dt — delta time in seconds
- */
 export function updateEnemy(enemy, corePos, dt) {
-  // Fade in
-  if (enemy.alpha < 1) {
-    enemy.alpha = Math.min(1, enemy.alpha + dt * 3);
-  }
+  if (enemy.alpha < 1) enemy.alpha = Math.min(1, enemy.alpha + dt * 4);
 
-  // Pulse phase
-  enemy.pulsePhase += dt * 3;
+  // Add subtle glitch jitter
+  if (Math.random() > 0.95) {
+    enemy.glitchOffset.x = (Math.random() - 0.5) * 6;
+    enemy.glitchOffset.y = (Math.random() - 0.5) * 6;
+  } else {
+    enemy.glitchOffset.x *= 0.8;
+    enemy.glitchOffset.y *= 0.8;
+  }
 
   switch (enemy.type) {
     case 'normal':
     case 'fast':
-      updateNormal(enemy, dt);
+      enemy.x += enemy.vx * dt;
+      enemy.y += enemy.vy * dt;
+      break;
+    case 'accelerator':
+      enemy.speed *= 1 + (0.5 * dt); // Gradually speed up
+      const dx = corePos.x - enemy.x;
+      const dy = corePos.y - enemy.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      enemy.vx = (dx / dist) * enemy.speed;
+      enemy.vy = (dy / dist) * enemy.speed;
+      enemy.x += enemy.vx * dt;
+      enemy.y += enemy.vy * dt;
       break;
     case 'zigzag':
-      updateZigzag(enemy, corePos, dt);
+      enemy.travelDist += enemy.speed * dt;
+      const zdx = corePos.x - enemy.x;
+      const zdy = corePos.y - enemy.y;
+      const zdist = Math.sqrt(zdx * zdx + zdy * zdy);
+      const zdirX = zdx / zdist;
+      const zdirY = zdy / zdist;
+      const offset = Math.sin(enemy.travelDist * 0.05) * 120;
+      enemy.x += (zdirX * enemy.speed - zdirY * offset * 0.5) * dt;
+      enemy.y += (zdirY * enemy.speed + zdirX * offset * 0.5) * dt;
       break;
     case 'orbit':
-      updateOrbit(enemy, corePos, dt);
+      enemy.radius -= enemy.spiralRate * dt;
+      enemy.angle += enemy.angularSpeed * dt;
+      enemy.x = corePos.x + Math.cos(enemy.angle) * enemy.radius;
+      enemy.y = corePos.y + Math.sin(enemy.angle) * enemy.radius;
+      break;
+    case 'burst':
+      enemy.x += enemy.vx * dt;
+      enemy.y += enemy.vy * dt;
       break;
   }
-}
-
-function updateNormal(enemy, dt) {
-  enemy.x += enemy.vx * dt;
-  enemy.y += enemy.vy * dt;
-}
-
-function updateZigzag(enemy, corePos, dt) {
-  // Move toward core
-  enemy.travelDist += enemy.speed * dt;
-  
-  // Recalculate direction to core for more accurate homing
-  const dx = corePos.x - enemy.x;
-  const dy = corePos.y - enemy.y;
-  const dist = Math.sqrt(dx * dx + dy * dy);
-  const dirX = dx / dist;
-  const dirY = dy / dist;
-  
-  // Zigzag offset
-  const zigzagAmplitude = 80;
-  const zigzagFrequency = 2.5;
-  const offset = Math.sin(enemy.travelDist * zigzagFrequency * 0.01) * zigzagAmplitude;
-  
-  // Perpendicular direction
-  const perpX = -dirY;
-  const perpY = dirX;
-  
-  enemy.vx = dirX * enemy.speed + perpX * offset * 0.5;
-  enemy.vy = dirY * enemy.speed + perpY * offset * 0.5;
-  
-  enemy.x += enemy.vx * dt;
-  enemy.y += enemy.vy * dt;
-}
-
-function updateOrbit(enemy, corePos, dt) {
-  // Spiral inward
-  enemy.radius -= enemy.spiralRate * dt;
-  enemy.angle += enemy.angularSpeed * dt;
-  
-  if (enemy.radius < 0) enemy.radius = 0;
-  
-  enemy.x = corePos.x + Math.cos(enemy.angle) * enemy.radius;
-  enemy.y = corePos.y + Math.sin(enemy.angle) * enemy.radius;
 }
 
 // ── Collision Check ─────────────────────────────────────────

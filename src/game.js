@@ -79,7 +79,8 @@ class Game {
       }
     } else if (result.action === 'wrong') {
       this.gameState.score = Math.max(0, this.gameState.score + result.score);
-      this.ui.screenShake(2, 50);
+      this.ui.screenShake(3, 100);
+      this.ui.triggerGlitch(150); // Trigger visual glitch on error
     }
   }
 
@@ -98,8 +99,8 @@ class Game {
 
   update(dt, timestamp) {
     // Scaling difficulty
-    this.gameState.difficulty = Math.min(1, this.gameState.elapsedTime / 300); // Max difficulty at 5 mins
-    this.gameState.spawnInterval = Math.max(800, 2500 * Math.pow(0.98, this.gameState.elapsedTime / 10));
+    this.gameState.difficulty = Math.min(1, this.gameState.elapsedTime / 300);
+    this.gameState.spawnInterval = Math.max(600, 2500 * Math.pow(0.97, this.gameState.elapsedTime / 10));
 
     // Spawning
     if (timestamp - this.gameState.lastSpawnTime > this.gameState.spawnInterval) {
@@ -109,7 +110,7 @@ class Game {
       this.gameState.lastSpawnTime = timestamp;
     }
 
-    // Update Typing State (heat, WPM)
+    // Update Typing State
     updateHeat(this.typing, dt);
     this.gameState.wpm = calculateWPM(this.typing, this.gameState.startTime);
 
@@ -118,9 +119,31 @@ class Game {
       const enemy = this.gameState.enemies[i];
       updateEnemy(enemy, this.gameState.core, dt);
 
+      // Handle Burst Splitting
+      if (enemy.type === 'burst' && !enemy.didSplit && enemy.typedIndex >= Math.ceil(enemy.word.length / 2)) {
+        enemy.didSplit = true;
+        enemy.alive = false;
+        
+        // Spawn two fragments
+        for (let j = 0; j < 2; j++) {
+          const fragment = createEnemy(this.canvas.width, this.canvas.height, this.gameState.core, this.gameState.difficulty, [], {
+            type: 'fast', // fragments are fast
+            x: enemy.x + (j === 0 ? -20 : 20),
+            y: enemy.y + (j === 0 ? -20 : 20)
+          });
+          this.gameState.enemies.push(fragment);
+        }
+        
+        if (this.typing.currentTarget === enemy) {
+          this.typing.currentTarget = null;
+          this.typing.typedChars = '';
+        }
+      }
+
       if (hasReachedCore(enemy, this.gameState.core)) {
         this.gameState.health -= 10;
         this.ui.screenShake(15, 200);
+        this.ui.triggerGlitch(300);
         this.gameState.enemies.splice(i, 1);
         if (this.typing.currentTarget === enemy) {
           this.typing.currentTarget = null;

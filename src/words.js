@@ -74,7 +74,7 @@ export function getRandomWord(difficulty) {
  */
 export function getUniqueWord(difficulty, activeWords) {
   const activeFirstChars = new Set(activeWords.map(w => w[0]));
-  
+
   // Try up to 20 times to find a non-conflicting word
   for (let i = 0; i < 20; i++) {
     const word = getRandomWord(difficulty);
@@ -82,12 +82,12 @@ export function getUniqueWord(difficulty, activeWords) {
       return word;
     }
   }
-  
+
   // Fallback: just avoid exact duplicate
   for (let i = 0; i < 10; i++) {
     const word = getRandomWord(difficulty);
     if (!activeWords.includes(word)) return word;
   }
-  
+
   return getRandomWord(difficulty);
 }
