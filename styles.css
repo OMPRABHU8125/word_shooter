@@ -188,6 +188,73 @@ body::after {
   letter-spacing: 2px;
 }
 
+/* ── Ad Layouts ─────────────────────────────────────────── */
+
+.side-ad-container {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 160px;
+    height: 600px;
+    background: rgba(255, 255, 255, 0.02);
+    display: none; /* Hidden by default, shown on widescreen */
+    z-index: 5;
+}
+
+.side-ad-container.left { left: 20px; }
+.side-ad-container.right { right: 20px; }
+
+@media (min-width: 1400px) {
+    .side-ad-container { display: block; }
+}
+
+.menu-ad-container, #game-over-ad-container {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.ad-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 90px;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+/* ── Compliance Footer ──────────────────────────────────── */
+
+#compliance-footer {
+    position: fixed;
+    bottom: 100px; /* Above banner ad */
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.3);
+    pointer-events: all;
+    z-index: 90;
+}
+
+#compliance-footer a {
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+    margin: 0 5px;
+}
+
+#compliance-footer a:hover {
+    color: var(--neon-cyan);
+    text-decoration: underline;
+}
+
 /* ── Heat Meter ──────────────────────────────────────────── */
 
 #heat-meter {
