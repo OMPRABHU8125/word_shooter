@@ -5,6 +5,7 @@
 import { createEnemy, updateEnemy, hasReachedCore, isOffScreen } from './enemy.js';
 import { createTypingState, processKeyPress, updateHeat, calculateWPM, handleEscape } from './typing.js';
 import { UIManager } from './ui.js';
+import { audio } from './audio.js';
 
 class Game {
   constructor() {
@@ -41,6 +42,9 @@ class Game {
   }
 
   start() {
+    // Initialize audio and start persistent layers
+    audio.startPersistentAudio();
+
     this.gameState.score = 0;
     this.gameState.health = 100;
     this.gameState.enemies = [];
@@ -73,14 +77,29 @@ class Game {
       this.gameState.score += result.score;
       this.ui.createLaser(this.gameState.core, result.enemy, result.enemy.typeDef.color);
       
+      // Audio: Correct key
+      audio.playKey();
+
       if (result.action === 'destroyed') {
         this.ui.createExplosion(result.enemy.x, result.enemy.y, result.enemy.typeDef.color);
         this.ui.screenShake(5, 100);
+        
+        // Audio: Enemy destroyed (with stereo panning)
+        const xRatio = result.enemy.x / this.canvas.width;
+        audio.playDestroy(xRatio);
+        
+        // Bonus: play combo tone every 5 words
+        if (this.typing.combo > 0 && this.typing.combo % 5 === 0) {
+          audio.playComboTone(this.typing.combo);
+        }
       }
     } else if (result.action === 'wrong') {
       this.gameState.score = Math.max(0, this.gameState.score + result.score);
       this.ui.screenShake(3, 100);
-      this.ui.triggerGlitch(150); // Trigger visual glitch on error
+      this.ui.triggerGlitch(150); 
+      
+      // Audio: Wrong key
+      audio.playError();
     }
   }
 
@@ -124,6 +143,9 @@ class Game {
         enemy.didSplit = true;
         enemy.alive = false;
         
+        // Audio: Burst split zap
+        audio.playHit();
+
         // Spawn two fragments
         for (let j = 0; j < 2; j++) {
           const fragment = createEnemy(this.canvas.width, this.canvas.height, this.gameState.core, this.gameState.difficulty, [], {
@@ -145,6 +167,10 @@ class Game {
         this.ui.screenShake(15, 200);
         this.ui.triggerGlitch(300);
         this.gameState.enemies.splice(i, 1);
+        
+        // Audio: Core damage
+        audio.playDamage();
+
         if (this.typing.currentTarget === enemy) {
           this.typing.currentTarget = null;
           this.typing.typedChars = '';
@@ -161,6 +187,9 @@ class Game {
     }
 
     this.ui.update(dt);
+    
+    // Update Dynamic Tension Audio
+    audio.updateDynamicAudio(this.gameState, this.typing);
   }
 
   render() {
@@ -179,6 +208,9 @@ class Game {
     document.getElementById('final-score').textContent = this.gameState.score;
     document.getElementById('final-wpm').textContent = this.gameState.wpm;
     document.getElementById('final-combo').textContent = this.typing.maxCombo;
+    
+    // Audio: Game Over shutdown
+    audio.playGameOver();
   }
 }
 
