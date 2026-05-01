@@ -60,6 +60,10 @@ class Game {
     document.getElementById('game-over-screen').style.display = 'none';
     document.getElementById('hud').style.display = 'flex';
     
+    // Hide ad overlays during gameplay
+    const adOverlay = document.getElementById('game-over-ad-overlay');
+    if (adOverlay) adOverlay.style.display = 'none';
+    
     requestAnimationFrame((t) => this.loop(t));
   }
 
@@ -211,6 +215,19 @@ class Game {
     
     // Audio: Game Over shutdown
     audio.playGameOver();
+
+    // ── SMART AD DISPLAY LOGIC ───────────────────────────────
+    // Delay ad appearance to prevent accidental clicks
+    setTimeout(() => {
+        const adOverlay = document.getElementById('game-over-ad-overlay');
+        if (adOverlay) {
+            adOverlay.style.display = 'block';
+            // Trigger AdSense refresh if needed
+            try {
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            } catch (e) {}
+        }
+    }, 1500);
   }
 }
 

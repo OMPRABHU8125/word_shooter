@@ -25,6 +25,28 @@ Instead:
 - **Typography**: Orbitron (Titles) & JetBrains Mono (Typing)
 - **Performance**: Lightweight, no external dependencies, < 2s load time.
 
+## 💰 Monetization Setup
+
+This project is pre-integrated with **Google AdSense**. Follow these steps to activate ads:
+
+1. **Deploy your site**: Use [Vercel](https://vercel.com/) or [Netlify](https://www.netlify.com/) to host your game.
+2. **AdSense Application**: 
+   - Sign in to [Google AdSense](https://www.google.com/adsense/start/).
+   - Add your deployed URL under "Sites".
+   - Copy your **Publisher ID** (looks like `ca-pub-XXXXXXXXXXXXXXXX`).
+3. **Configuration**:
+   - Open `index.html`.
+   - Search for `ca-pub-XXXXXXXXXXXXXXXX`.
+   - Replace all occurrences with your actual Publisher ID.
+4. **Ad Slots**:
+   - Create Display Ad units in your AdSense dashboard.
+   - Replace the `data-ad-slot="XXXXXXXXXX"` placeholders in `index.html` with your actual slot IDs.
+
+### Compliance
+- **Privacy Policy**: Located at `/privacy-policy.html`.
+- **Terms of Service**: Located at `/terms.html`.
+- **Links**: Automatically added to the game footer.
+
 ## 🚀 How to Run
 1. Clone the repository.
 2. Since the project uses ES Modules, you need to serve it via a local server (to avoid CORS issues).
@@ -42,7 +64,7 @@ This is a static site and can be deployed instantly to **Vercel**, **Netlify**, 
 ## 📈 Future Roadmap
 - [ ] Global Leaderboard (Firebase/Supabase integration)
 - [ ] Multiplayer "Race" mode
-- [ ] Sound Effects (Web Audio API)
+- [x] Sound Effects (Web Audio API)
 - [ ] Custom word packs (JavaScript, Python, Cyber-Security terms)
 
 ---
