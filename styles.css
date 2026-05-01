@@ -1,0 +1,239 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700;900&display=swap');
+
+:root {
+  --neon-cyan: #00f5ff;
+  --neon-pink: #ff2ecf;
+  --neon-orange: #ff6b35;
+  --neon-gold: #ffd700;
+  --bg-dark: #050505;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: white;
+  font-family: 'JetBrains Mono', monospace;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+#game-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* ── HUD ─────────────────────────────────────────────────── */
+
+#hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: none;
+  justify-content: space-between;
+  padding: 20px 40px;
+  z-index: 10;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+  pointer-events: none;
+}
+
+.hud-item {
+  text-align: center;
+}
+
+.hud-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  color: var(--neon-cyan);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 5px;
+}
+
+.hud-value {
+  font-size: 24px;
+  font-weight: bold;
+  text-shadow: 0 0 10px var(--neon-cyan);
+}
+
+/* ── Heat Meter ──────────────────────────────────────────── */
+
+#heat-meter {
+  position: fixed;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  z-index: 10;
+}
+
+#heat-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(to top, var(--neon-cyan), var(--neon-orange), #ff0000);
+  transition: height 0.1s ease-out;
+}
+
+#heat-fill.overheating {
+  animation: flicker 0.1s infinite;
+}
+
+@keyframes flicker {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* ── Typed Word Display ──────────────────────────────────── */
+
+#typed-display-container {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  text-align: center;
+  pointer-events: none;
+}
+
+#typed-display {
+  font-size: 32px;
+  font-weight: bold;
+  letter-spacing: 4px;
+  color: white;
+  text-shadow: 0 0 15px var(--neon-cyan);
+}
+
+/* ── Screens (Menu/Game Over) ────────────────────────────── */
+
+.screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+}
+
+h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 72px;
+  font-weight: 900;
+  color: var(--neon-cyan);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  text-shadow: 0 0 30px var(--neon-cyan);
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 50px;
+  letter-spacing: 4px;
+}
+
+.btn {
+  background: transparent;
+  border: 2px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+  padding: 15px 40px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 10px;
+  position: relative;
+  overflow: hidden;
+  pointer-events: all;
+}
+
+.btn:hover {
+  background: var(--neon-cyan);
+  color: black;
+  box-shadow: 0 0 30px var(--neon-cyan);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  margin-bottom: 50px;
+}
+
+.stat-box {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  min-width: 150px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--neon-cyan);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+/* ── Ads ─────────────────────────────────────────────────── */
+
+.ad-container {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 90px;
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.2);
+  border-top: 1px solid var(--glass-border);
+  z-index: 5;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  h1 { font-size: 40px; }
+  .stats-grid { grid-template-columns: 1fr; gap: 10px; }
+  #hud { padding: 10px 20px; }
+  .hud-value { font-size: 18px; }
+}

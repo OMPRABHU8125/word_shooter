@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Shooter | Cyber Defense Typing Game</title>
+    <meta name="description" content="Neutralize corrupted data packets in this high-speed cyber-defense typing game. Protect the core!">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <canvas id="game-canvas"></canvas>
+
+    <!-- ── HUD Overlay ──────────────────────────────────────── -->
+    <div id="hud">
+        <div class="hud-item">
+            <div class="hud-label">Score</div>
+            <div id="score" class="hud-value">000000</div>
+        </div>
+        <div class="hud-item">
+            <div class="hud-label">WPM</div>
+            <div id="wpm" class="hud-value">0</div>
+        </div>
+        <div class="hud-item">
+            <div class="hud-label">Combo</div>
+            <div id="combo" class="hud-value">x0</div>
+        </div>
+        <div class="hud-item">
+            <div class="hud-label">Core Health</div>
+            <div id="health-text" class="hud-value">100%</div>
+        </div>
+    </div>
+
+    <!-- ── Heat Meter ───────────────────────────────────────── -->
+    <div id="heat-meter">
+        <div id="heat-fill"></div>
+    </div>
+
+    <!-- ── Current Typed Word ───────────────────────────────── -->
+    <div id="typed-display-container">
+        <div id="typed-display">_</div>
+    </div>
+
+    <!-- ── Menu Screen ──────────────────────────────────────── -->
+    <div id="menu-screen" class="screen">
+        <h1>Word Shooter</h1>
+        <div class="subtitle">NEUTRALIZE THE CORRUPTION</div>
+        <button id="start-btn" class="btn">Initialize Defense</button>
+        <div style="margin-top: 40px; color: rgba(255,255,255,0.4); text-align: center; max-width: 400px; line-height: 1.6;">
+            Type words to fire pulses.<br>
+            Protect the central core from incoming packets.<br>
+            Don't let the system overheat.
+        </div>
+    </div>
+
+    <!-- ── Game Over Screen ─────────────────────────────────── -->
+    <div id="game-over-screen" class="screen" style="display: none;">
+        <h1>Core Compromised</h1>
+        <div class="subtitle">SYSTEM SHUTDOWN IMMINENT</div>
+        
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-label">Final Score</div>
+                <div id="final-score" class="stat-value">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Avg WPM</div>
+                <div id="final-wpm" class="stat-value">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Max Combo</div>
+                <div id="final-combo" class="stat-value">0</div>
+            </div>
+        </div>
+
+        <div style="display: flex;">
+            <button id="restart-btn" class="btn">Reboot System</button>
+            <button id="share-btn" class="btn" style="border-color: var(--neon-pink); color: var(--neon-pink);">Share Report</button>
+        </div>
+
+        <!-- AdSense Placeholder (Interstitial Style) -->
+        <div style="margin-top: 50px; opacity: 0.5;">
+            <div id="interstitial-ad" style="width: 300px; height: 250px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border: 1px dashed rgba(255,255,255,0.2);">
+                Ad Space
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Bottom Banner Ad Placeholder ─────────────────────── -->
+    <div class="ad-container">
+        <div id="banner-ad">Advertisement Placeholder</div>
+    </div>
+
+    <script type="module" src="src/game.js"></script>
+</body>
+</html>
